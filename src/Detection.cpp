@@ -61,38 +61,54 @@ int minArr(double arr[], int n) {
 //an array used to find the best fitting template, the colour index and the shape index added together, the object index number, and the array containing the template indexes
 //phuu... that was a long one
 int match(cv::Mat templateArray[], double ITS[], int images, cv::Rect sqr1, double bestFit[], int colourshape, std::vector<cv::Point>& contour1, int sign[]) {
-
+	ROS_INFO("match found");
 	//A for loop that will runs once for each template
 	for (int i = 0; i < images; i++) {
+		ROS_INFO("m1");
 		//Creating a matrix the same size as the current template
 		cv::Mat Temp_1R = cv::Mat(templateArray[i].size(), CV_8U);
+		ROS_INFO("m2");
 		//Creating a matrix the same size as the bounding box
 		cv::Mat crop = cv::Mat(sqr1.size(), CV_8U);
+		ROS_INFO("m3");
 		//Puts whatevver is inside the bounding box in the inout image into the matrix "crop"
 		crop = frame(sqr1);
-		//Resizes the template to the detected sign to get the best match, and puts the image in the Temp_1R matrix
-		resize(templateArray[i], Temp_1R, cv::Size(crop.cols*ITS[i], crop.rows*ITS[i]));
+		int cols = crop.cols;
+		int rows =crop.rows;
 
+		ROS_INFO("m4 ,%d, %d",cols,rows);
+		//Resizes the template to the detected sign to get the best match, and puts the image in the Temp_1R matrix
+		cv::resize(templateArray[i], Temp_1R, cv::Size(cols*ITS[i], rows*ITS[i]));
+		ROS_INFO("m5");
 		//Converts the template matrix to greyscale
 		cvtColor(Temp_1R, Temp_1R, cv::COLOR_BGR2GRAY);
+		ROS_INFO("m6");
 		//Converts the image to greyscale
 		cvtColor(crop, crop, cv::COLOR_BGR2GRAY);
+		ROS_INFO("m7");
 		//Does a threshold for the cropped image to make it binary
 		threshold(crop, crop, 80, 255, cv::THRESH_BINARY_INV);
+		ROS_INFO("m8");
 
 		//Creates the output matrix for the mathing funtion
 		cv::Mat result_1;
+		ROS_INFO("m9");
 		//Check how well the second input mathes the first input
 		matchTemplate(crop, Temp_1R, result_1, cv::TM_SQDIFF);
+		ROS_INFO("m10");
 		//Used to store the best and worst match of the single template in the given bounding box
 		double minVal, maxVal;
+		ROS_INFO("m11");
 		//Used to determin where on the image minVal and maxVal is located
 		cv::Point minLoc, maxLoc;
+		ROS_INFO("m12");
 		//Saves the values to the corrosponding int's
 		minMaxLoc(result_1, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat());
+		ROS_INFO("m13");
 
 		//Saves the minVal in an array initialised in the funtion inside
 		bestFit[i] = minVal;
+		ROS_INFO("m done :()");
 	}
 	//Calls for the funtion minArr and put the result into fitIndex
 	int fitIndex = minArr(bestFit, images);
@@ -102,27 +118,32 @@ int match(cv::Mat templateArray[], double ITS[], int images, cv::Rect sqr1, doub
 
 //inside funtion, takes bounding box, the shape-type index, colour + shape-type, and the contour index as input
 void inside(cv::Rect sqr, int shapetype, int colourshape, std::vector<cv::Point>& contour){
-
+	ROS_INFO("i break now 1");
 	//Creates an array containing the index number of all the signs recognizable
 	int signIndex[] = { 111, 112, 113, 131, 132, 221 };
 	//corresponding string names for each sign
-	std::string signLabel[] = { "MainSideRoad", "Yield", "Kids", "DontGoLeft", "70", "Cross" };
+	ROS_INFO("i break now 2");
+	//std::string signLabel[] = { "MainSideRoad", "Yield", "Kids", "DontGoLeft", "70", "Cross" };
 	//Creates an int called sign, this is not used right here, but will be later on
 	int sign;
 
 	// if statement checking what kind of sign we are dealing with
 	if (shapetype == 10) {
-
+		ROS_INFO("i break now A.3");
 		//Array containing the paths to all the templates, it is important they are in order
-		cv::Mat triangles[] = { cv::imread("/home/usr/catkin_ws/detection/src/templates/mainsideroad.png"), cv::imread("/home/usr/catkin_ws/detection/src/templates/yield.png"), cv::imread("/home/usr/catkin_ws/detection/src/templates/kids.png")};
+		cv::Mat triangles[] = { cv::imread("templates/mainsideroad"), cv::imread("templates/yield"), cv::imread("templates/kids ")};
 		//Array containg the ratio between the sign and the image insige it, this is used to scale the template later
+		ROS_INFO("i break now A.4");
 		double triITSratio[] = {0.345368, 0.516129032, 0.3577405858};
 		//Index number of each template in an array
+		ROS_INFO("i break now A.5");
 		int triSign[] = {1, 2, 3};
 		//An array with as many elements as templates for the specific shape
+		ROS_INFO("i break now A.6");
 		double bestFitTri[3] = {};
 
 		// this int is used to count number of templates
+		ROS_INFO("i break now A.3");
 		int triimages = 0;
 		//for loop that runs as many times as the number of templates
 		for (cv::Mat element : triangles) {
@@ -137,7 +158,7 @@ void inside(cv::Rect sqr, int shapetype, int colourshape, std::vector<cv::Point>
 	if(shapetype == 20){
 
 		//Array containing the paths to all the templates, it is important they are in order
-		cv::Mat rectangles[] = { cv::imread("/home/usr/catkin_ws/detection/src/templates/WalkerTemp.png")};
+		cv::Mat rectangles[] = { cv::imread("templates/WalkerTemp ")};
 		//Array containg the ratio between the sign and the image insige it, this is used to scale the template later
 		double rectITSratio[] = {0.627659};
 		//Index number of each template in an array
@@ -158,27 +179,31 @@ void inside(cv::Rect sqr, int shapetype, int colourshape, std::vector<cv::Point>
 
 	// if statement checking what kind of sign we are dealing with
 	if (shapetype == 30) {
-
+		ROS_INFO("i break now C.3");
 		//Array containing the paths to all the templates, it is important they are in order
-		cv::Mat circles[] = { cv::imread("/home/usr/catkin_ws/detection/src/templates/dontgoleft.png"), cv::imread("/home/usr/catkin_ws/detection/src/templates/70.png") };
+		cv::Mat circles[] = { cv::imread("templates/dontgoleft "), cv::imread("templates/70 ") };
 		//Array containg the ratio between the sign and the image insige it, this is used to scale the template later
+		ROS_INFO("i break now C.4");
 		double cirITSratio[] = { 0.5091743, 0.5019762 };
 		//Index number of each template in an array
+		ROS_INFO("i break now C.5");
 		int cirSign[] = { 1, 2 };
 		//An array with as many elements as templates for the specific shape
+		ROS_INFO("i break now C.6");
 		double bestFitCir[2] = {};
-
+		ROS_INFO("i break now C.7");
 		// this int is used to count number of templates
 		int cirimages = 0;
 		//for loop that runs as many times as the number of templates
-		for (cv::Mat element : circles) {
+		/*for (cv::Mat element : circles) {
 			//Will end up to be equal to the number of templates
 			cirimages++;
-		}
+		}*/
+		ROS_INFO("i break now C.8 :()");
 		//Here the int sign is used and set equal to the out put of the function match, wich is also called. Inputs are explained at the funtion
-		sign = match(circles, cirITSratio, cirimages, sqr, bestFitCir, colourshape, contour, cirSign);
+		sign = match(circles, cirITSratio, 2, sqr, bestFitCir, colourshape, contour, cirSign);
 	}
-
+ /*
 	// this int is used to count number of signs detectable
 	int tempimages = 0;
 	//for loop that runs as many times as the number of signs that can be detected
@@ -200,16 +225,17 @@ void inside(cv::Rect sqr, int shapetype, int colourshape, std::vector<cv::Point>
 		}
 	}
 	//If j is smaller tempimages (number of elements in signLabel (array containing the string names of detectable signs))
-	if (j < tempimages) {
+	if (j < tempimages)
 		//Calls for setLabel with the image input, the name of the detected sign, and the specific object index number as input
 		//The entire funktion is a placeholder for the output the TurtleBot needs to act on the sign given
-		setLabel(src, signLabel[j], contour);
-	}
+		//setLabel(src, signLabel[j], contour);*/
+		ROS_INFO("Sign:%d",sign);
+	//}
 }
 
 //findShapes funtion. Takes thresholded image and a colour index as input
 void findShapes(cv::Mat& im, int colour) {
-
+	ROS_INFO("Shape found");
 	//Creating morphing elements
 	cv::Mat element1 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(19, 19));
 	cv::Mat element2 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
@@ -279,14 +305,15 @@ void findShapes(cv::Mat& im, int colour) {
 			}
 		}
 	}
+
 }
 
 // findColour funtion. Takes the ROI as input
 void findColour(cv::Mat& im) {
-
+	ROS_INFO("Color found");
 	//Creates a matrix for each colour to look for, with the same amount of colums and rows as the inout image
 	cv::Mat red = cv::Mat(im.rows, im.cols, CV_8U);
-	cv::Mat blue = cv::Mat(im.rows, im.cols, CV_8U);
+	//cv::Mat blue = cv::Mat(im.rows, im.cols, CV_8U);
 
 	/*
 		When usning the inRange funtion, it takes an HSV image (Hue, Saturation, Value) input.
@@ -307,13 +334,13 @@ void findColour(cv::Mat& im) {
 	// converting from RGB to HSV
 	cvtColor(im, red, cv::COLOR_RGB2HSV);
 	// converting from BGR to HSV
-	cvtColor(im, blue, cv::COLOR_BGR2HSV);
+	//cvtColor(im, blue, cv::COLOR_BGR2HSV);
 	// Using the inRange funtion to threshold a specific colour
 	inRange(red, cv::Scalar(100, s1, v1), cv::Scalar(140, s2, v2), red);
-	inRange(blue, cv::Scalar(100, s1, v1), cv::Scalar(140, s2, v2), blue);
+	//inRange(blue, cv::Scalar(100, s1, v1), cv::Scalar(140, s2, v2), blue);
 	//Executing the findShapes function with the colour thresholded image and a colour index as an input
 	findShapes(red, 100);
-	findShapes(blue, 200);
+	//findShapes(blue, 200);
 
 }
 
